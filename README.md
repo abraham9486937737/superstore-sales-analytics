@@ -27,6 +27,67 @@ pip install -r requirements.txt
 
 3. Launch Jupyter Lab or your preferred notebook environment.
 
+## Interactive Dashboard
+
+This project now includes an executive-friendly interactive dashboard built from the findings of the end-to-end notebook.
+
+- App file: `app.py`
+- Framework: Streamlit + Plotly
+- Focus: management KPIs, filters, trend analysis, loss-risk hotspots, and recommendations
+
+### Run Locally
+
+```bash
+streamlit run app.py
+```
+
+### Dashboard Highlights
+
+- Global and filtered KPIs: sales, profit, margin, order count, loss rate, average discount
+- Decision filters: date, region, segment, category, sub-category, state, discount bucket
+- Management visuals:
+	- Monthly sales/profit trends
+	- Category and region performance
+	- Discount vs profit and bucket profitability
+	- Top loss-making sub-categories
+- Executive interpretation section:
+	- key findings from notebook outputs
+	- model performance summary
+	- actionable recommendations
+	- skills demonstrated
+
+## Portfolio Publishing
+
+Use this repository as a complete portfolio artifact:
+
+1. Analysis notebook (`notebooks/superstore_end_to_end_analysis.ipynb`)
+2. Interactive app (`app.py`)
+3. Documentation and reproducible setup (`README.md`, `requirements.txt`)
+
+For a posting-ready checklist and templates, see:
+
+- `reports/portfolio_publish_guide.md`
+
+## Hugging Face Deployment (Streamlit Space)
+
+### Option A: Deploy this repo directly
+
+1. Create a new Hugging Face Space.
+2. Choose SDK: **Streamlit**.
+3. Connect your GitHub repository.
+4. Ensure `app.py` is at the repository root.
+5. Deploy.
+
+### Option B: Deploy a minimal app repo
+
+If you want faster build/deploy times, create a smaller repo containing only:
+
+- `app.py`
+- `requirements.txt`
+- `SuperStoreOrders_SuperStoreOrders.csv` (or a `data/raw/` copy)
+
+Then connect that repo to a Streamlit Space.
+
 ## Data
 
 The repository currently includes SuperStore order datasets used for analysis. Review the dataset source and licensing terms before sharing the repository publicly.
