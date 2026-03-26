@@ -3,14 +3,14 @@ import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
-import { Download, FileSpreadsheet, FileType2, Image } from "lucide-react";
+import { Download, FileSpreadsheet, FileType2, Image, Moon, Sun } from "lucide-react";
 
 /**
  * ExportToolbar
  * Purpose: Export filtered dashboard outputs to Excel, PDF, and PNG formats.
  * Styling: Compact action bar with icon-first controls.
  */
-function ExportToolbar({ filteredRows, exportElementRef }) {
+function ExportToolbar({ filteredRows, exportElementRef, isDark, onToggleTheme }) {
   const exportExcel = () => {
     const worksheet = XLSX.utils.json_to_sheet(filteredRows);
     const workbook = XLSX.utils.book_new();
@@ -82,6 +82,15 @@ function ExportToolbar({ filteredRows, exportElementRef }) {
           </button>
         );
       })}
+      <button
+        type="button"
+        onClick={onToggleTheme}
+        className="inline-flex items-center gap-1 rounded-full border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition-all hover:scale-105 hover:bg-slate-50"
+        aria-label="Toggle dark mode"
+        style={{ height: 36 }}
+      >
+        {isDark ? <Sun size={14} /> : <Moon size={14} />} {isDark ? "Light" : "Dark"} mode
+      </button>
     </div>
   );
 }

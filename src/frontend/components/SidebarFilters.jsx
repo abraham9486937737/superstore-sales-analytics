@@ -1,4 +1,5 @@
 import React from "react";
+import Select from "react-select";
 import {
   CalendarRange,
   Globe,
@@ -92,18 +93,16 @@ function SidebarFilters({
 
       <div className="space-y-4">
         <FilterGroup title="Geography" icon={Globe} isDark={isDark} defaultOpen>
-          <FilterSelect id="filter-region" label="Region" options={regionOptions} values={selectedRegions} onChange={onRegionsChange} readMultiSelect={readMultiSelect} isDark={isDark} />
-          <FilterSelect id="filter-country" label="Country" options={countryOptions} values={selectedCountries} onChange={onCountriesChange} readMultiSelect={readMultiSelect} isDark={isDark} />
+          <FilterSelect id="filter-region" label="Region" options={regionOptions} values={selectedRegions} onChange={onRegionsChange} isDark={isDark} />
         </FilterGroup>
 
-        <FilterGroup title="Product" icon={Package} isDark={isDark} defaultOpen>
-          <FilterSelect id="filter-category" label="Category" options={categoryOptions} values={selectedCategories} onChange={onCategoriesChange} readMultiSelect={readMultiSelect} isDark={isDark} />
-          <FilterSelect id="filter-sub-category" label="Sub-Category" options={subCategoryOptions} values={selectedSubCategories} onChange={onSubCategoriesChange} readMultiSelect={readMultiSelect} isDark={isDark} />
-          <FilterSelect id="filter-product" label="Product" options={productOptions} values={selectedProducts} onChange={onProductsChange} readMultiSelect={readMultiSelect} isDark={isDark} />
+        <FilterGroup title="Category" icon={Package} isDark={isDark}>
+          <SingleSelect id="filter-category" label="Category" options={categoryOptions} value={selectedCategories[0] || ''} onChange={(val) => onCategoriesChange([val])} isDark={isDark} />
+          <SingleSelect id="filter-sub-category" label="Sub-Category" options={subCategoryOptions} value={selectedSubCategories[0] || ''} onChange={(val) => onSubCategoriesChange([val])} isDark={isDark} />
         </FilterGroup>
 
         <FilterGroup title="Customer" icon={Users} isDark={isDark}>
-          <FilterSelect id="filter-segment" label="Customer Segment" options={segmentOptions} values={selectedSegments} onChange={onSegmentsChange} readMultiSelect={readMultiSelect} isDark={isDark} />
+          <SingleSelect id="filter-segment" label="Customer Segment" options={segmentOptions} value={selectedSegments[0] || ''} onChange={(val) => onSegmentsChange([val])} isDark={isDark} />
         </FilterGroup>
 
         <FilterGroup title="Time" icon={CalendarRange} isDark={isDark} defaultOpen>
@@ -111,16 +110,71 @@ function SidebarFilters({
             <FilterInput label="Start Date" type="date" value={selectedRange.startDate} min={minDate} max={maxDate} onChange={(value) => onRangeChange({ ...selectedRange, startDate: value })} isDark={isDark} />
             <FilterInput label="End Date" type="date" value={selectedRange.endDate} min={minDate} max={maxDate} onChange={(value) => onRangeChange({ ...selectedRange, endDate: value })} isDark={isDark} />
           </div>
-          <FilterSelect id="filter-year" label="Year" options={yearOptions.map(String)} values={selectedYears.map(String)} onChange={(values) => onYearsChange(values.map(Number))} readMultiSelect={readMultiSelect} isDark={isDark} />
+          <FilterSelect id="filter-year" label="Year" options={yearOptions.map(String)} values={selectedYears.map(String)} onChange={(values) => onYearsChange(values.map(Number))} isDark={isDark} />
           <RangeGroup label={`Year Window (${yearWindow[0]} - ${yearWindow[1]})`} min={yearOptions[0] || 2011} max={yearOptions[yearOptions.length - 1] || 2014} values={yearWindow} onChange={onYearWindowChange} isDark={isDark} />
         </FilterGroup>
 
         <FilterGroup title="Shipping & Discount" icon={Truck} isDark={isDark}>
-          <FilterSelect id="filter-ship-mode" label="Shipping Mode" options={shipModeOptions} values={selectedShipModes} onChange={onShipModesChange} readMultiSelect={readMultiSelect} isDark={isDark} />
+          <FilterSelect id="filter-ship-mode" label="Shipping Mode" options={shipModeOptions} values={selectedShipModes} onChange={onShipModesChange} isDark={isDark} />
           <RangeGroup label={`Discount Range (${Math.round(discountRange[0] * 100)}% - ${Math.round(discountRange[1] * 100)}%)`} min={0} max={100} values={[Math.round(discountRange[0] * 100), Math.round(discountRange[1] * 100)]} onChange={(values) => onDiscountRangeChange([values[0] / 100, values[1] / 100])} isDark={isDark} icon={Percent} />
         </FilterGroup>
       </div>
     </aside>
+  );
+}
+
+// SingleSelect: single dropdown for category, sub-category, and customer segment
+function SingleSelect({ id, label, options, value, onChange, isDark }) {
+  const selectOptions = options.map((opt) => ({ value: opt, label: opt }));
+  const selected = selectOptions.find((opt) => opt.value === value) || null;
+  return (
+    <div className="mb-2">
+      <label htmlFor={id} className={`mb-1 block text-xs font-semibold uppercase tracking-wide ${isDark ? "text-slate-300" : "text-slate-600"}`}>
+        {label}
+      </label>
+      <Select
+        inputId={id}
+        isMulti={false}
+        options={selectOptions}
+        value={selected}
+        onChange={(selectedOption) => onChange(selectedOption ? selectedOption.value : '')}
+        classNamePrefix="react-select"
+        styles={{
+          control: (base) => ({
+            ...base,
+            background: isDark ? '#1e293b' : '#fff',
+            borderColor: isDark ? '#334155' : '#cbd5e1',
+            minHeight: 44,
+            borderRadius: 12,
+            boxShadow: '0 2px 8px 0 rgba(30, 64, 175, 0.04)',
+          }),
+          option: (base, state) => ({
+            ...base,
+            background: state.isSelected
+              ? 'linear-gradient(90deg, #38bdf8 0%, #6366f1 100%)'
+              : state.isFocused
+              ? '#f1f5f9'
+              : '#fff',
+            color: state.isSelected ? '#fff' : '#334155',
+            fontWeight: state.isSelected ? 700 : 500,
+          }),
+          menu: (base) => ({
+            ...base,
+            borderRadius: 12,
+            zIndex: 20,
+          }),
+        }}
+        theme={(theme) => ({
+          ...theme,
+          borderRadius: 12,
+          colors: {
+            ...theme.colors,
+            primary25: '#e0e7ff',
+            primary: '#6366f1',
+          },
+        })}
+      />
+    </div>
   );
 }
 
@@ -136,27 +190,74 @@ function FilterGroup({ title, icon: Icon, children, isDark, defaultOpen = false 
   );
 }
 
-function FilterSelect({ id, label, options, values, onChange, readMultiSelect, isDark }) {
+function FilterSelect({ id, label, options, values, onChange, isDark }) {
+  // react-select expects options as [{ value, label }]
+  const selectOptions = options.map((opt) => ({ value: opt, label: opt }));
+  const selected = selectOptions.filter((opt) => values.includes(opt.value));
   return (
-    <div>
+    <div className="mb-2">
       <label htmlFor={id} className={`mb-1 block text-xs font-semibold uppercase tracking-wide ${isDark ? "text-slate-300" : "text-slate-600"}`}>
         {label}
       </label>
-      <select
-        id={id}
-        multiple
-        value={values}
-        onChange={(event) => onChange(readMultiSelect(event))}
-        className={`h-24 w-full rounded-xl border px-2 py-1 text-sm font-medium outline-none transition-all focus:border-blue-600 focus:ring-2 focus:ring-blue-200 ${
-          isDark ? "border-slate-600 bg-slate-900 text-slate-100" : "border-slate-300 bg-white text-slate-800"
-        }`}
-      >
-        {options.map((value) => (
-          <option key={`${id}-${value}`} value={value}>
-            {value}
-          </option>
-        ))}
-      </select>
+      <Select
+        inputId={id}
+        isMulti
+        options={selectOptions}
+        value={selected}
+        onChange={(selectedOptions) => onChange(selectedOptions ? selectedOptions.map((o) => o.value) : [])}
+        classNamePrefix="react-select"
+        styles={{
+          control: (base) => ({
+            ...base,
+            background: isDark ? '#1e293b' : '#fff',
+            borderColor: isDark ? '#334155' : '#cbd5e1',
+            minHeight: 44,
+            borderRadius: 12,
+            boxShadow: '0 2px 8px 0 rgba(30, 64, 175, 0.04)',
+          }),
+          multiValue: (base) => ({
+            ...base,
+            background: 'linear-gradient(90deg, #e0e7ff 0%, #bae6fd 100%)',
+            color: '#1e40af',
+            borderRadius: 8,
+            fontWeight: 600,
+          }),
+          multiValueLabel: (base) => ({
+            ...base,
+            color: '#1e40af',
+            fontWeight: 600,
+          }),
+          multiValueRemove: (base) => ({
+            ...base,
+            color: '#0ea5e9',
+            ':hover': { background: '#bae6fd', color: '#be185d' },
+          }),
+          option: (base, state) => ({
+            ...base,
+            background: state.isSelected
+              ? 'linear-gradient(90deg, #38bdf8 0%, #6366f1 100%)'
+              : state.isFocused
+              ? '#f1f5f9'
+              : '#fff',
+            color: state.isSelected ? '#fff' : '#334155',
+            fontWeight: state.isSelected ? 700 : 500,
+          }),
+          menu: (base) => ({
+            ...base,
+            borderRadius: 12,
+            zIndex: 20,
+          }),
+        }}
+        theme={(theme) => ({
+          ...theme,
+          borderRadius: 12,
+          colors: {
+            ...theme.colors,
+            primary25: '#e0e7ff',
+            primary: '#6366f1',
+          },
+        })}
+      />
     </div>
   );
 }

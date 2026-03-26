@@ -10,6 +10,7 @@ import SalesChart from "./components/SalesChart";
 import ProfitChart from "./components/ProfitChart";
 import CategoryProfitHeatmap from "./components/CategoryProfitHeatmap";
 import CountrySalesBubbleChart from "./components/CountrySalesBubbleChart";
+import CategoryRegionStudio from "./components/CategoryRegionStudio";
 import TrendForecastChart from "./components/TrendForecastChart";
 import StatisticalDistribution from "./components/StatisticalDistribution";
 import StorytellingTimeline from "./components/StorytellingTimeline";
@@ -65,9 +66,18 @@ function App() {
             if (!alive) {
               return;
             }
-            const parsed = result.data
-              .map((row, index) => normalizeRowFromCsv(row, index))
-              .filter(Boolean);
+            // Debug: Log first 5 rows and normalization results
+            console.log("First 5 CSV rows:", result.data.slice(0, 5));
+            const normalized = result.data.map((row, index) => {
+              const norm = normalizeRowFromCsv(row, index);
+              if (!norm) {
+                console.warn("Row failed normalization:", row);
+              }
+              return norm;
+            });
+            const parsed = normalized.filter(Boolean);
+            console.log("First 5 normalized rows:", parsed.slice(0, 5));
+            console.log(`Total parsed rows: ${parsed.length}`);
 
             if (parsed.length) {
               setRawData(parsed);
@@ -78,10 +88,11 @@ function App() {
             }
             setLoading(false);
           },
-          error: () => {
+          error: (err) => {
             if (!alive) {
               return;
             }
+            console.error("CSV parse error:", err);
             setRawData(enrichMockRows(mockSuperstoreData));
             setLoadMessage("CSV parse issue. Using enriched fallback data.");
             setLoading(false);
@@ -306,6 +317,42 @@ function App() {
   const histogram = useMemo(() => buildHistogram(filteredData.map((x) => x.profit), 12), [filteredData]);
   const stats = useMemo(() => buildStats(filteredData.map((x) => x.profit)), [filteredData]);
 
+  const selectedProductInsight = useMemo(() => {
+    const selected = selectedProducts?.[0];
+    if (!selected) {
+      return null;
+    }
+    const rows = filteredData.filter((row) => row.product === selected);
+    if (!rows.length) {
+      return {
+        product: selected,
+        orders: 0,
+        totalSales: 0,
+        totalProfit: 0,
+        avgDiscount: 0,
+        topRegion: "N/A",
+      };
+    }
+
+    const totalSales = rows.reduce((acc, row) => acc + (Number(row.sales) || 0), 0);
+    const totalProfit = rows.reduce((acc, row) => acc + (Number(row.profit) || 0), 0);
+    const avgDiscount = rows.reduce((acc, row) => acc + (Number(row.discount) || 0), 0) / rows.length;
+    const byRegion = {};
+    rows.forEach((row) => {
+      byRegion[row.region] = (byRegion[row.region] || 0) + (Number(row.sales) || 0);
+    });
+    const topRegion = Object.entries(byRegion).sort((a, b) => b[1] - a[1])[0]?.[0] || "N/A";
+
+    return {
+      product: selected,
+      orders: rows.length,
+      totalSales,
+      totalProfit,
+      avgDiscount,
+      topRegion,
+    };
+  }, [filteredData, selectedProducts]);
+
   const milestones = useMemo(() => {
     if (!monthlyData.length) {
       return [];
@@ -515,7 +562,14 @@ function App() {
     </motion.header>
   );
 
-  const rightActions = <ExportToolbar filteredRows={filteredData} exportElementRef={dashboardRef} />;
+  const rightActions = (
+    <ExportToolbar
+      filteredRows={filteredData}
+      exportElementRef={dashboardRef}
+      isDark={isDark}
+      onToggleTheme={() => setIsDark((prev) => !prev)}
+    />
+  );
 
   return (
     <DashboardLayout
@@ -559,6 +613,20 @@ function App() {
         KPI Drill-down: {kpiDrilldown}
       </div>
 
+      {selectedProductInsight && (
+        <div className={`mt-4 rounded-xl border p-4 text-sm ${isDark ? "border-slate-700 bg-slate-800/70 text-slate-100" : "border-emerald-100 bg-emerald-50 text-slate-700"}`}>
+          <p className="text-xs font-semibold uppercase tracking-wide opacity-80">Product Drill-down</p>
+          <p className="mt-1 text-lg font-bold">{selectedProductInsight.product}</p>
+          <div className="mt-2 grid gap-2 sm:grid-cols-2 xl:grid-cols-5">
+            <span>Orders: <b>{selectedProductInsight.orders.toLocaleString()}</b></span>
+            <span>Sales: <b>{formatCurrency(selectedProductInsight.totalSales)}</b></span>
+            <span>Profit: <b>{formatCurrency(selectedProductInsight.totalProfit)}</b></span>
+            <span>Avg Discount: <b>{formatPercent(selectedProductInsight.avgDiscount)}</b></span>
+            <span>Top Region: <b>{selectedProductInsight.topRegion}</b></span>
+          </div>
+        </div>
+      )}
+
       {activeTab === "Overview" && (
         <div className="mt-6 grid gap-4 xl:grid-cols-2">
           <SalesChart data={monthlyData} isDark={isDark} animationKey={activeTab} />
@@ -576,10 +644,7 @@ function App() {
       )}
 
       {activeTab === "Category & Region Studio" && (
-        <div className="mt-6 grid gap-4 xl:grid-cols-2">
-          <CountrySalesBubbleChart data={countryBubble} isDark={isDark} animationKey={activeTab} />
-          <TopProductsChart data={topProducts} onProductSelect={(product) => product && setSelectedProducts([product])} isDark={isDark} animationKey={activeTab} />
-        </div>
+        <CategoryRegionStudio data={filteredData} isDark={isDark} animationKey={activeTab} />
       )}
 
       {activeTab === "Trend Analysis" && (

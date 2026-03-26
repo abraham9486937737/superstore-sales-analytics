@@ -41,7 +41,7 @@ function SalesChart({ data, isDark = false, animationKey }) {
             <XAxis dataKey="month" tick={{ fill: "#475569", fontSize: 12 }} />
             <YAxis tick={{ fill: "#475569", fontSize: 12 }} />
             <Tooltip content={<SalesTooltip />} cursor={{ fill: "rgba(59,130,246,0.08)" }} />
-            <Bar dataKey="sales" fill="#7dd3fc" radius={[8, 8, 0, 0]} />
+            <Bar dataKey="sales" fill="#7dd3fc" radius={[8, 8, 0, 0]} isAnimationActive animationDuration={650} />
             <Line
               type="monotone"
               dataKey="salesTrend"
@@ -49,6 +49,8 @@ function SalesChart({ data, isDark = false, animationKey }) {
               strokeWidth={3}
               dot={{ r: 3 }}
               activeDot={{ r: 6 }}
+              isAnimationActive
+              animationDuration={700}
             />
           </ComposedChart>
         </ResponsiveContainer>

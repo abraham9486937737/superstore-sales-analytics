@@ -56,18 +56,6 @@ function DashboardLayout({ sidebar, header, children, isDark, onToggleTheme, rig
             <div />
             <div className="flex flex-wrap items-center gap-2">
               {rightActions}
-              <button
-                type="button"
-                onClick={onToggleTheme}
-                className={`inline-flex items-center gap-1 rounded-full border px-3 py-1.5 text-xs font-semibold transition-all hover:scale-105 ${
-                  isDark
-                    ? "border-slate-500 bg-slate-800 text-slate-100"
-                    : "border-slate-300 bg-white text-slate-700"
-                }`}
-                aria-label="Toggle dark mode"
-              >
-                {isDark ? <Sun size={14} /> : <Moon size={14} />} {isDark ? "Light" : "Dark"} mode
-              </button>
             </div>
           </div>
           {header}

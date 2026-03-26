@@ -53,6 +53,8 @@ function ProfitChart({ data, isDark = false, animationKey }) {
               fill="url(#profitGradient)"
               dot={{ r: 3 }}
               activeDot={{ r: 6 }}
+              isAnimationActive
+              animationDuration={700}
             />
           </AreaChart>
         </ResponsiveContainer>
