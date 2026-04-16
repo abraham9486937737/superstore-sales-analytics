@@ -74,15 +74,18 @@ function FeedbackForm({ isDark = false }) {
     setErrorMsg("");
     setSuccessMsg("");
 
+    const payload = {
+      name: name.trim(),
+      email: email.trim(),
+      message: message.trim(),
+      submittedAt: new Date().toISOString(),
+    };
+
     try {
       const res = await fetch(feedbackApiUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: name.trim(),
-          email: email.trim(),
-          message: message.trim(),
-        }),
+        body: JSON.stringify(payload),
       });
 
       const data = await res.json().catch(() => ({}));
@@ -92,16 +95,27 @@ function FeedbackForm({ isDark = false }) {
       }
 
       setStatus("success");
-      setSuccessMsg(data.message || "Feedback processed successfully.");
+      setSuccessMsg(data.message || "Feedback sent successfully.");
       setName("");
       setEmail("");
       setMessage("");
     } catch (err) {
-      setStatus("error");
-      setErrorMsg(
-        err.message ||
-          "Could not send feedback. Make sure the backend server is running on port 3001, then try again."
-      );
+      try {
+        const existing = JSON.parse(window.localStorage.getItem("superstore-feedback") || "[]");
+        existing.push(payload);
+        window.localStorage.setItem("superstore-feedback", JSON.stringify(existing));
+        setStatus("success");
+        setSuccessMsg("Feedback saved locally in demo mode. Thank you for sharing your suggestion.");
+        setName("");
+        setEmail("");
+        setMessage("");
+      } catch {
+        setStatus("error");
+        setErrorMsg(
+          err.message ||
+            "Could not send feedback right now. Please try again later."
+        );
+      }
     }
   };
 
@@ -200,15 +214,11 @@ function FeedbackForm({ isDark = false }) {
           {serverStatus.loading && "Checking feedback server status..."}
           {!serverStatus.loading && serverStatus.online && serverStatus.emailConfigured && "Feedback server is online and email delivery is configured."}
           {!serverStatus.loading && serverStatus.online && !serverStatus.emailConfigured && "Feedback server is online, but email delivery is not configured yet. Submissions will be accepted but not emailed."}
-          {!serverStatus.loading && !serverStatus.online && "Feedback server is offline. Start the backend on port 3001 before submitting."}
+          {!serverStatus.loading && !serverStatus.online && "Feedback API is offline. In public demo mode, submissions will be saved locally in your browser."}
         </div>
 
         <p className={`mt-3 text-xs ${isDark ? "text-slate-500" : "text-slate-400"}`}>
-          Requires the feedback backend server to be running. See{" "}
-          <code className="rounded bg-slate-200/60 px-1 py-0.5 text-xs dark:bg-slate-700/60">
-            src/server/README.md
-          </code>{" "}
-          for setup.
+          Live email delivery is available when the backend is running. Otherwise, the form still works in demo mode for portfolio review.
         </p>
       </div>
 

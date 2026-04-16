@@ -1,145 +1,68 @@
-# SuperStore Sales Data Analytics
+# SuperStore Sales Analytics
 
-Data analytics project for exploring and modeling SuperStore sales data.
+End-to-end retail analytics portfolio project built from raw SuperStore order data to business storytelling, machine learning, and interactive dashboards.
 
-## Overview
+## Project Highlights
 
-This repository contains datasets, notebooks, and project folders for analyzing SuperStore order data. The current workspace includes raw CSV files, a requirements file for the Python environment, and standard directories for processed data, models, reports, and source code.
+- Cleaned and standardized multi-column retail order data
+- Performed exploratory and statistical analysis across sales, profit, discount, region, segment, and product performance
+- Built predictive models for profit behavior and loss-risk analysis
+- Created two interactive experiences:
+  - a Streamlit dashboard for analytics storytelling
+  - a React dashboard for portfolio-style presentation
 
-## Project Structure
+## Key Business Insights
 
-- `data/raw/` - raw input datasets
-- `data/processed/` - cleaned and transformed datasets
-- `models/` - trained model artifacts
-- `notebooks/` - Jupyter notebooks for exploration and experiments
-- `reports/` - generated reports and exports
-- `src/` - reusable project code
-- `requirements.txt` - Python dependencies
+- Technology emerged as the strongest profit-driving category in the consolidated review
+- Tables consistently appeared as the biggest loss-making sub-category
+- High discounting was strongly associated with weaker profitability
+- Regional performance was uneven, showing clear opportunities for targeted pricing and product strategy
+- Sales momentum improved toward the later period of the analysis window
 
-## Setup
+## Tech Stack
 
-1. Create and activate a Python environment.
-2. Install dependencies:
+Python, pandas, numpy, scikit-learn, plotly, Streamlit, React, Vite, Tailwind CSS
+
+## Repository Structure
+
+- `app.py` — Streamlit dashboard
+- `notebooks/` — three notebook variants for end-to-end, interview, and tutorial storytelling
+- `src/frontend/` — React dashboard
+- `reports/` — publishing notes and supporting documentation
+
+## Run Locally
+
+### Streamlit
 
 ```bash
 pip install -r requirements.txt
-```
-
-3. Launch Jupyter Lab or your preferred notebook environment.
-
-## Interactive Dashboard
-
-This project now includes an executive-friendly interactive dashboard built from the findings of the end-to-end notebook.
-
-- App file: `app.py`
-- Framework: Streamlit + Plotly
-- Focus: management KPIs, filters, trend analysis, loss-risk hotspots, and recommendations
-
-### Run Locally
-
-```bash
 streamlit run app.py
 ```
 
-### Dashboard Highlights
+### React dashboard
 
-- Global and filtered KPIs: sales, profit, margin, order count, loss rate, average discount
-- Decision filters: date, region, segment, category, sub-category, state, discount bucket
-- Management visuals:
-	- Monthly sales/profit trends
-	- Category and region performance
-	- Discount vs profit and bucket profitability
-	- Top loss-making sub-categories
-- Executive interpretation section:
-	- key findings from notebook outputs
-	- model performance summary
-	- actionable recommendations
-	- skills demonstrated
+```bash
+cd src/frontend
+npm install
+npm run dev
+```
 
-## Portfolio Publishing
+## Deployment Targets
 
-Use this repository as a complete portfolio artifact:
+- GitHub repository: https://github.com/abraham9486937737/superstore-sales-analytics
+- GitHub Pages frontend: https://abraham9486937737.github.io/superstore-sales-analytics/
+- Hugging Face Space: add your live Space URL here after deployment
 
-1. Analysis notebook (`notebooks/superstore_end_to_end_analysis.ipynb`)
-2. Interactive app (`app.py`)
-3. Documentation and reproducible setup (`README.md`, `requirements.txt`)
+## Portfolio Value
 
-For a posting-ready checklist and templates, see:
+This project demonstrates the full analytics workflow:
 
-- `reports/portfolio_publish_guide.md`
+1. data quality review
+2. business-focused EDA
+3. statistical insight generation
+4. machine learning evaluation
+5. dashboard-based stakeholder communication
 
-## Hugging Face Deployment (Streamlit Space)
+## Author
 
-### Option A: Deploy this repo directly
-
-1. Create a new Hugging Face Space.
-2. Choose SDK: **Streamlit**.
-3. Connect your GitHub repository.
-4. Ensure `app.py` is at the repository root.
-5. Deploy.
-
-### Option B: Deploy a minimal app repo
-
-If you want faster build/deploy times, create a smaller repo containing only:
-
-- `app.py`
-- `requirements.txt`
-- `SuperStoreOrders_SuperStoreOrders.csv` (or a `data/raw/` copy)
-
-Then connect that repo to a Streamlit Space.
-
-## Data
-
-The repository currently includes SuperStore order datasets used for analysis. Review the dataset source and licensing terms before sharing the repository publicly.
-
-## Library Selection Notes (Why We Use Each)
-
-This project uses each library with a specific purpose, so reviewers can understand not just what we used, but why.
-
-### Core Data Handling
-
-- `pandas` - Main tool for loading CSV files, cleaning columns, handling dates, and building analysis-ready tables.
-- `numpy` - Fast numerical operations and array utilities used under the hood by most analytics and ML workflows.
-
-### Visualization and Reporting
-
-- `matplotlib` - Base plotting library for reliable static charts.
-- `seaborn` - High-level statistical visualization built on matplotlib, used for cleaner exploratory plots.
-- `plotly` - Interactive charts for dashboards and presentation-style exploration.
-
-### Statistical Analysis
-
-- `scipy` - Scientific computing functions (distributions, tests, optimization helpers).
-- `statsmodels` - Interpretable statistical modeling and hypothesis-driven analysis.
-
-### Machine Learning Models
-
-- `scikit-learn` - End-to-end ML utilities: preprocessing, model training pipelines, metrics, and validation.
-- `xgboost` - High-performance gradient boosting for strong predictive baselines.
-- `lightgbm` - Fast gradient boosting for large/tabular datasets.
-- `catboost` - Boosting model with good support for categorical feature handling.
-- `imbalanced-learn` - Resampling strategies (like SMOTE) for class-imbalance problems.
-
-### Explainability and Optimization
-
-- `shap` - Model explainability (feature impact and local/global prediction interpretation).
-- `optuna` - Hyperparameter tuning with efficient search strategies.
-
-### Experiment Tracking and App Layer
-
-- `mlflow` - Tracks experiments, parameters, metrics, and model artifacts.
-- `streamlit` - Quick deployment of an interactive data app for stakeholders.
-
-### Notebook and Environment Tooling
-
-- `jupyterlab` - Interactive notebook environment for EDA and iterative modeling.
-- `ipykernel` - Kernel support so the selected Python environment runs in notebooks.
-
-### Reusable Note Template
-
-When adding a new library, document it in this format:
-
-- `Library Name` - What problem it solves in this project.
-- `Why this over alternatives` - One-line tradeoff decision.
-- `Where used` - Notebook/script path.
-- `Risk/limitation` - Any known caveat.
+Abraham

@@ -1,0 +1,2 @@
+# Replace <your-username> and <repo-name> with your actual GitHub username and repository name
+"homepage": "https://<your-username>.github.io/<repo-name>",
