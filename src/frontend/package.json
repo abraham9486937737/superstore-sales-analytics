@@ -9,7 +9,7 @@
     "build": "node ./node_modules/vite/bin/vite.js build",
     "preview": "node ./node_modules/vite/bin/vite.js preview --port 4173",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist || gh-pages -d dist"
+    "deploy": "node ../../node_modules/gh-pages/bin/gh-pages.js -d dist"
   },
   "dependencies": {
     "core-js": "^3.41.0",
