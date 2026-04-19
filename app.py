@@ -43,8 +43,12 @@ def load_data() -> pd.DataFrame:
     raise FileNotFoundError("Could not find SuperStoreOrders_SuperStoreOrders.csv")
 
 
-def format_money(value: float) -> str:
-    return f"${value:,.0f}"
+def format_money(value: float, decimals: int = 0) -> str:
+    return f"${value:,.{decimals}f}"
+
+
+def format_number(value: float, decimals: int = 0) -> str:
+    return f"{value:,.{decimals}f}"
 
 
 def format_pct(value: float) -> str:
@@ -108,7 +112,7 @@ def build_forecast(frame: pd.DataFrame) -> pd.DataFrame:
 df = load_data()
 min_date = df["order_date"].dropna().min().date()
 max_date = df["order_date"].dropna().max().date()
-default_range = (pd.Timestamp("2014-01-01").date(), pd.Timestamp("2014-12-31").date())
+default_range = (min_date, max_date)
 
 st.title("📊 SuperStore Sales Analytics")
 
@@ -163,13 +167,32 @@ profit_total = float(filtered["profit"].sum())
 profit_margin = profit_total / sales_total if sales_total else 0.0
 loss_orders = int((filtered["profit"] < 0).sum())
 avg_discount = float(filtered["discount"].mean()) if len(filtered) else 0.0
+total_orders = int(len(filtered))
+unique_orders = int(filtered["order_id"].nunique()) if "order_id" in filtered.columns else total_orders
+unique_products = int(filtered["product_id"].nunique()) if "product_id" in filtered.columns else int(filtered["product_name"].nunique())
+total_quantity = float(filtered["quantity"].sum()) if "quantity" in filtered.columns else 0.0
+total_shipping_cost = float(filtered["shipping_cost"].sum()) if "shipping_cost" in filtered.columns else 0.0
+avg_order_value = sales_total / unique_orders if unique_orders else 0.0
+avg_quantity_ordered = total_quantity / unique_orders if unique_orders else 0.0
+max_sale = float(filtered["sales"].max()) if total_orders else 0.0
+min_sale = float(filtered["sales"].min()) if total_orders else 0.0
 
 metrics = {
-    "Orders": f"{len(filtered):,}",
+    "Total Orders": format_number(total_orders),
+    "Total Unique Orders": format_number(unique_orders),
+    "Total Unique Products": format_number(unique_products),
+    "Total Quantity Sold": format_number(total_quantity),
     "Total Sales": format_money(sales_total),
-    "Total Profit": format_money(profit_total),
-    "Profit Margin": format_pct(profit_margin),
-    "Loss Orders": f"{loss_orders:,}",
+    "Total Profit": format_money(profit_total, 2),
+    "Profit Margin %": format_pct(profit_margin),
+    "Loss Orders": format_number(loss_orders),
+    "Avg. Discount %": format_pct(avg_discount),
+    "Total Shipping Cost": format_money(total_shipping_cost, 2),
+    "Avg. Order Value": format_money(avg_order_value, 2),
+    "Avg. Quantity Ordered": format_number(avg_quantity_ordered, 2),
+    "Max. Sale": format_money(max_sale),
+    "Min. Sale": format_money(min_sale),
+    "Orders": format_number(total_orders),
     "Avg Discount": format_pct(avg_discount),
     "Top Performing Product": top_group_value(filtered, "product_name", "sales"),
     "Weak Performing Product": top_group_value(filtered, "product_name", "profit", ascending=True),
@@ -179,18 +202,16 @@ metrics = {
 }
 
 primary_cols = st.columns(6)
-for idx, key in enumerate(["Total Sales", "Total Profit", "Profit Margin", "Orders", "Loss Orders", "Avg Discount"]):
+for idx, key in enumerate(["Total Orders", "Total Unique Orders", "Total Unique Products", "Total Sales", "Total Profit", "Profit Margin %"]):
     primary_cols[idx].metric(key, metrics[key])
 
-secondary_cols = st.columns(5)
-for idx, key in enumerate([
-    "Top Performing Product",
-    "Weak Performing Product",
-    "Target Customer Segment",
-    "Target Region",
-    "Target Category/Sub-Category",
-]):
+secondary_cols = st.columns(6)
+for idx, key in enumerate(["Total Quantity Sold", "Avg. Discount %", "Total Shipping Cost", "Avg. Order Value", "Avg. Quantity Ordered", "Loss Orders"]):
     secondary_cols[idx].metric(key, metrics[key])
+
+tertiary_cols = st.columns(2)
+for idx, key in enumerate(["Max. Sale", "Min. Sale"]):
+    tertiary_cols[idx].metric(key, metrics[key])
 
 tabs = st.tabs(TAB_NAMES)
 

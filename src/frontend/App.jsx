@@ -24,7 +24,7 @@ import CorrelationMatrix from "./components/CorrelationMatrix";
 import TargetActualGauge from "./components/TargetActualGauge";
 import ImprovementOpportunities from "./components/ImprovementOpportunities";
 import { mockSuperstoreData } from "./data/mockSuperstoreData";
-import { formatCurrency, formatPercent, monthLabel } from "./utils/formatters";
+import { formatCurrency, formatNumber, formatPercent, monthLabel } from "./utils/formatters";
 
 function App() {
   const [rawData, setRawData] = useState([]);
@@ -34,7 +34,7 @@ function App() {
   const [isDark, setIsDark] = useState(false);
   const [selectedKpi, setSelectedKpi] = useState("Total Sales");
 
-  const [selectedRange, setSelectedRange] = useState({ startDate: "2014-01-01", endDate: "2014-12-31" });
+  const [selectedRange, setSelectedRange] = useState({ startDate: "", endDate: "" });
   const [selectedRegions, setSelectedRegions] = useState([]);
   const [selectedCountries, setSelectedCountries] = useState([]);
   const [selectedCategories, setSelectedCategories] = useState([]);
@@ -228,6 +228,15 @@ function App() {
     const totalSalesValue = sum(filteredData, "sales");
     const totalProfitValue = sum(filteredData, "profit");
     const avgDiscountValue = filteredData.length ? sum(filteredData, "discount") / filteredData.length : 0;
+    const totalOrdersValue = filteredData.length;
+    const uniqueOrdersValue = new Set(filteredData.map((row) => row.orderId).filter(Boolean)).size;
+    const uniqueProductsValue = new Set(filteredData.map((row) => row.productId || row.product).filter(Boolean)).size;
+    const totalQuantityValue = sum(filteredData, "quantity");
+    const totalShippingCostValue = sum(filteredData, "shippingCost");
+    const avgOrderValueValue = uniqueOrdersValue ? totalSalesValue / uniqueOrdersValue : 0;
+    const avgQuantityOrderedValue = uniqueOrdersValue ? totalQuantityValue / uniqueOrdersValue : 0;
+    const maxSaleValue = filteredData.length ? Math.max(...filteredData.map((row) => Number(row.sales) || 0)) : 0;
+    const minSaleValue = filteredData.length ? Math.min(...filteredData.map((row) => Number(row.sales) || 0)) : 0;
     const lossOrders = filteredData.filter((row) => row.profit < 0).length;
 
     const topProduct = topBy(filteredData, "product", "sales");
@@ -238,12 +247,22 @@ function App() {
     const trends = buildMetricTrends(monthlyData);
 
     return {
-      totalSales: formatCurrency(totalSalesValue),
-      totalProfit: formatCurrency(totalProfitValue),
+      totalOrders: formatNumber(totalOrdersValue),
+      totalUniqueOrders: formatNumber(uniqueOrdersValue),
+      totalUniqueProducts: formatNumber(uniqueProductsValue),
+      totalQuantitySold: formatNumber(totalQuantityValue),
+      totalSales: formatCurrency(totalSalesValue, 0),
+      totalProfit: formatCurrency(totalProfitValue, 2),
       profitMargin: formatPercent(totalSalesValue ? totalProfitValue / totalSalesValue : 0),
-      orders: filteredData.length.toLocaleString(),
-      lossOrders: lossOrders.toLocaleString(),
+      orders: formatNumber(totalOrdersValue),
+      lossOrders: formatNumber(lossOrders),
       avgDiscount: formatPercent(avgDiscountValue),
+      avgDiscountPct: formatPercent(avgDiscountValue),
+      totalShippingCost: formatCurrency(totalShippingCostValue, 2),
+      avgOrderValue: formatCurrency(avgOrderValueValue, 2),
+      avgQuantityOrdered: formatNumber(avgQuantityOrderedValue, 2),
+      maxSale: formatCurrency(maxSaleValue, 0),
+      minSale: formatCurrency(minSaleValue, 0),
       topProduct,
       weakProduct,
       targetSegment,
@@ -412,11 +431,13 @@ function App() {
         return `Top profit driver is ${topBy(filteredData, "category", "profit")}.`;
       case "Profit Margin":
         return `Margin sits at ${metrics.profitMargin}; optimize discount-heavy orders for lift.`;
+      case "Total Orders":
       case "Orders":
         return `Order concentration is highest in ${topBy(filteredData, "country", "count")}.`;
       case "Loss Orders":
         return `Loss risk clusters in ${bottomBy(filteredData, "category", "profit")}.`;
       case "Avg Discount":
+      case "Avg. Discount %":
         return `Average discount is ${metrics.avgDiscount}; monitor approvals over 20%.`;
       case "Top Performing Product":
         return `${metrics.topProduct} is leading revenue growth.`;
@@ -861,6 +882,8 @@ function normalizeRowFromCsv(row, index) {
   const sales = Number(row.sales) || 0;
   const profit = Number(row.profit) || 0;
   const discount = Number(row.discount) || 0;
+  const quantity = Number(row.quantity) || 0;
+  const shippingCost = Number(row.shipping_cost || row.shippingCost) || 0;
 
   const category = row.category || "Uncategorized";
   const subCategory = row.sub_category || row.subcategory || row["sub-category"] || "Other";
@@ -873,6 +896,7 @@ function normalizeRowFromCsv(row, index) {
 
   return {
     orderId: row.order_id || row.orderid || `ORD-${index + 1}`,
+    productId: row.product_id || row.productid || product,
     date,
     year: new Date(date).getFullYear(),
     region,
@@ -886,6 +910,8 @@ function normalizeRowFromCsv(row, index) {
     sales,
     profit,
     discount,
+    quantity,
+    shippingCost,
     margin: sales ? profit / sales : 0,
   };
 }
@@ -905,6 +931,7 @@ function enrichMockRows(rows) {
     const profit = Number(row.profit) || 0;
     return {
       orderId: `MOCK-${index + 1}`,
+      productId: `MOCK-PROD-${index + 1}`,
       date,
       year: new Date(date).getFullYear(),
       region: row.region || "Unknown",
@@ -918,6 +945,8 @@ function enrichMockRows(rows) {
       sales,
       profit,
       discount: Number(row.discount) || 0,
+      quantity: Number(row.quantity) || ((index % 5) + 1),
+      shippingCost: Number(row.shipping_cost || row.shippingCost) || 0,
       margin: sales ? profit / sales : 0,
     };
   });
