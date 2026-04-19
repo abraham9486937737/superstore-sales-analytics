@@ -53,7 +53,7 @@ function App() {
 
     async function loadData() {
       try {
-        const response = await fetch("/SuperStoreOrders_SuperStoreOrders.csv");
+        const response = await fetch(`${import.meta.env.BASE_URL}SuperStoreOrders_SuperStoreOrders.csv`);
         if (!response.ok) {
           throw new Error("CSV unavailable");
         }
