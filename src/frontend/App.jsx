@@ -336,41 +336,6 @@ function App() {
   const histogram = useMemo(() => buildHistogram(filteredData.map((x) => x.profit), 12), [filteredData]);
   const stats = useMemo(() => buildStats(filteredData.map((x) => x.profit)), [filteredData]);
 
-  const selectedProductInsight = useMemo(() => {
-    const selected = selectedProducts?.[0];
-    if (!selected) {
-      return null;
-    }
-    const rows = filteredData.filter((row) => row.product === selected);
-    if (!rows.length) {
-      return {
-        product: selected,
-        orders: 0,
-        totalSales: 0,
-        totalProfit: 0,
-        avgDiscount: 0,
-        topRegion: "N/A",
-      };
-    }
-
-    const totalSales = rows.reduce((acc, row) => acc + (Number(row.sales) || 0), 0);
-    const totalProfit = rows.reduce((acc, row) => acc + (Number(row.profit) || 0), 0);
-    const avgDiscount = rows.reduce((acc, row) => acc + (Number(row.discount) || 0), 0) / rows.length;
-    const byRegion = {};
-    rows.forEach((row) => {
-      byRegion[row.region] = (byRegion[row.region] || 0) + (Number(row.sales) || 0);
-    });
-    const topRegion = Object.entries(byRegion).sort((a, b) => b[1] - a[1])[0]?.[0] || "N/A";
-
-    return {
-      product: selected,
-      orders: rows.length,
-      totalSales,
-      totalProfit,
-      avgDiscount,
-      topRegion,
-    };
-  }, [filteredData, selectedProducts]);
 
   const milestones = useMemo(() => {
     if (!monthlyData.length) {
@@ -425,34 +390,6 @@ function App() {
       .sort((a, b) => b.profit - a.profit);
   }, [filteredData]);
 
-  const kpiDrilldown = useMemo(() => {
-    switch (selectedKpi) {
-      case "Total Profit":
-        return `Top profit driver is ${topBy(filteredData, "category", "profit")}.`;
-      case "Profit Margin":
-        return `Margin sits at ${metrics.profitMargin}; optimize discount-heavy orders for lift.`;
-      case "Total Orders":
-      case "Orders":
-        return `Order concentration is highest in ${topBy(filteredData, "country", "count")}.`;
-      case "Loss Orders":
-        return `Loss risk clusters in ${bottomBy(filteredData, "category", "profit")}.`;
-      case "Avg Discount":
-      case "Avg. Discount %":
-        return `Average discount is ${metrics.avgDiscount}; monitor approvals over 20%.`;
-      case "Top Performing Product":
-        return `${metrics.topProduct} is leading revenue growth.`;
-      case "Weak Performing Product":
-        return `${metrics.weakProduct} needs corrective action.`;
-      case "Target Customer Segment":
-        return `${metrics.targetSegment} is the priority segment for scaling.`;
-      case "Target Region":
-        return `${metrics.targetRegion} is currently the strongest profit region.`;
-      case "Target Category/Sub-Category":
-        return `${metrics.targetCategorySubCategory} is the highest value pocket to scale.`;
-      default:
-        return `Sales leadership currently belongs to ${topBy(filteredData, "category", "sales")}.`;
-    }
-  }, [selectedKpi, filteredData, metrics]);
 
   const handleClearAll = () => {
     setSelectedRange({ startDate: dateBounds.minDate, endDate: dateBounds.maxDate });
@@ -630,23 +567,6 @@ function App() {
       )}
       <NavigationTabs activeTab={activeTab} onTabChange={setActiveTab} isDark={isDark} />
       <KPISection metrics={metrics} selectedKpi={selectedKpi} onKpiSelect={setSelectedKpi} isDark={isDark} />
-      <div className={`mt-4 rounded-xl border p-3 text-sm ${isDark ? "border-slate-700 bg-slate-800/70 text-slate-200" : "border-blue-100 bg-blue-50 text-slate-700"}`}>
-        KPI Drill-down: {kpiDrilldown}
-      </div>
-
-      {selectedProductInsight && (
-        <div className={`mt-4 rounded-xl border p-4 text-sm ${isDark ? "border-slate-700 bg-slate-800/70 text-slate-100" : "border-emerald-100 bg-emerald-50 text-slate-700"}`}>
-          <p className="text-xs font-semibold uppercase tracking-wide opacity-80">Product Drill-down</p>
-          <p className="mt-1 text-lg font-bold">{selectedProductInsight.product}</p>
-          <div className="mt-2 grid gap-2 sm:grid-cols-2 xl:grid-cols-5">
-            <span>Orders: <b>{selectedProductInsight.orders.toLocaleString()}</b></span>
-            <span>Sales: <b>{formatCurrency(selectedProductInsight.totalSales)}</b></span>
-            <span>Profit: <b>{formatCurrency(selectedProductInsight.totalProfit)}</b></span>
-            <span>Avg Discount: <b>{formatPercent(selectedProductInsight.avgDiscount)}</b></span>
-            <span>Top Region: <b>{selectedProductInsight.topRegion}</b></span>
-          </div>
-        </div>
-      )}
 
       {activeTab === "Overview" && (
         <div className="mt-6 grid gap-4 xl:grid-cols-2">
